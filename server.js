@@ -1,6 +1,7 @@
 const express = require('express');
 const { Server } = require('socket.io');
 const http = require('http');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
@@ -8,7 +9,15 @@ const io = new Server(server, {
   cors: { origin: '*' }
 });
 
-app.use(express.static('public'));
+// Важно: обслуживаем статические файлы из папки public
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Все остальные GET-запросы отдаём index.html (SPA)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+console.log('Сервер настроен для Railway');
 
 // Хранилище комнат (in-memory)
 const rooms = new Map(); // roomId → { name, users: Map<socketId, {nickname}>, messages: [], voiceUsers: Set<socketId> }
